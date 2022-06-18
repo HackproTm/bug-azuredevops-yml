@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32407.337
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database-GEO", "Database-US\Database-GEO.sqlproj", "{51176E44-960C-4AA4-BA60-42A614494B3B}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database-MASTER", "Database-MASTER\Database-MASTER.sqlproj", "{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51176E44-960C-4AA4-BA60-42A614494B3B}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CDC4813-D720-4084-9648-2AF5C6B2AF6E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8063EFAF-435B-44DC-88D6-CD2F5D9D9884}
+	EndGlobalSection
+EndGlobal
