@@ -1,0 +1,31 @@
+parameters:
+  branch: ""
+  repositoryName: ""
+  resourceName: ""
+
+steps:
+  #-- Build Project Database --#
+  - template: ../../../common/buildsqlproj.template.yml
+    parameters:
+      branch: ${{ parameters.branch }}
+      resourceName: ${{ parameters.resourceName }}
+      pathProjectName: $(ProjectName)
+      projectName: $(ProjectName)
+      repositoryName: ${{ parameters.repositoryName }}
+
+  #-- Copy Database DACPAC file --#
+  - task: CopyFiles@2
+    displayName: Copy $(ProjectName)
+    inputs:
+      SourceFolder: $(RootFolderOrFile)
+      Contents: "*.dacpac"
+      TargetFolder: $(Build.ArtifactStagingDirectory)/DacPac
+      OverWrite: true
+    continueOnError: true
+
+  #-- Publish Artifact --#
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifact
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: $(ArtifactName)

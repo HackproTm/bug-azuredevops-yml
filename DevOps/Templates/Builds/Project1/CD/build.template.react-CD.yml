@@ -1,0 +1,24 @@
+parameters:
+  branch: ""
+  repositoryName: ""
+  resourceName: ""
+
+#-- Steps --#
+steps:
+  #-- Build Project Web --#
+  - template: ../../../Common/react.template.yml
+    parameters:
+      branch: ${{ parameters.branch }}
+      buildCustomCommand: $(BuildCustomCommand)
+      pathProjectName: $(ProjectName)
+      repositoryName: ${{ parameters.repositoryName }}
+      resourceName: ${{ parameters.resourceName }}
+      testEnable: false
+
+  #-- Publish Artifact - Web -#
+  - template: ../../../Common/publishartifact.template.yml
+    parameters:
+      appArtifactName: $(ArtifactName)
+      projectName: $(ProjectName)
+      rootFolderOrFile: $(RootFolderOrFile)
+      pathToPublish: $(Build.ArtifactStagingDirectory)/$(ArtifactName).zip

@@ -1,0 +1,51 @@
+parameters:
+  projectName: ""
+
+variables:
+  #Paths vars
+  - name: CommonTemplatePath
+    value: ../Templates/Common
+  - name: BuildTemplatePath
+    value: ../Templates/Builds/${{ parameters.projectName }}
+  - name: NPM_Config_Cache
+    value: $(Agent.HomeDirectory)/cache/npm
+
+  # General vars
+  - name: CoverageThreshold
+    value: 80
+  - ${{ if eq(parameters.projectName, 'PROJECT1') }}:
+    - name: ProjectName
+      value: Project1
+  - ${{ if eq(parameters.projectName, 'PROJECT2') }}:
+    - name: ProjectName
+      value: Project2
+
+  # FrontEnd vars
+  - name: BuildCustomCommand
+    value: run build
+  - ${{ if eq(parameters.projectName, 'PROJECT1') }}:
+    - name: TestCustomCommand
+      value: "run tests:unit"
+  - ${{ if eq(parameters.projectName, 'PROJECT2') }}:
+    - name: TestCustomCommand
+      value: run test
+
+  # NetCore
+  - name: BuildArgumentsCI
+    value: "-c debug /p:DeployOnBuild=True /p:CreatePackageOnPublish=True"
+  - name: BuildArgumentsCD
+    value: -c release
+  - name: BuildCommand
+    value: build
+  - name: BuildPublishCommand
+    value: publish
+  - name: TargetFramework
+    value: net6.0
+  - name: TestArguments
+    value: "/p:CollectCoverage=true /p:IncludeTestAssembly=true /p:CoverletOutputFormat=opencover"
+  - ${{ if eq(parameters.projectName, 'PROJECT1') }}:
+    - name: NetCoreVersion
+      value: 5.x
+  - ${{ if eq(parameters.projectName, 'PROJECT2') }}:
+    - name: NetCoreVersion
+      value: 6.0.x

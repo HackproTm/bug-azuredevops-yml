@@ -1,0 +1,150 @@
+parameters:
+  branch: ''
+  buildCustomCommand: ''
+  pathProjectName: ''
+  repositoryName: ''
+  runCheckoutCode: true
+  testEnable: true
+  testCustomCommand: 'run unit'
+  publishTestResults: true
+  resourceName: ''
+  coverageThreshold: 0
+  mailListStakeHolders: 'hackpro@yopmail.com'
+
+steps:
+  #-- Checkout the Code Repository --#
+  - template: checkoutcode.template.yml
+    parameters:
+      branchName: ${{ parameters.branch }}
+      repositoryName: ${{ parameters.repositoryName }}
+      resourceName: ${{ parameters.resourceName }}
+      runCheckoutCode: ${{ parameters.runCheckoutCode }}
+      cleanCheckout: true
+      listFiles: true
+
+  #-- Npm install --#
+  - task: NodeTool@0
+    displayName: Use Node 12.x
+    inputs:
+      versionSpec: =12.x
+
+  - task: Npm@1
+    displayName: Npm install
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: install --cache $(npm_config_cache)
+    continueOnError: true
+
+  #-- Npm build --#
+  - task: Npm@1
+    displayName: Npm run build
+    inputs:
+      command: custom
+      customCommand: ${{ parameters.buildCustomCommand }}
+      verbose: false
+    continueOnError: false
+
+  #-- Npm test --#
+  - task: Npm@1
+    displayName: npm test
+    inputs:
+      command: custom
+      verbose: true
+      customCommand: ${{ parameters.testCustomCommand }}
+      publishTestResults: true
+    enabled: ${{ parameters.testEnable }}
+    continueOnError: false
+
+  - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+    displayName: Report Generator
+    inputs:
+      reports: $(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml
+      targetdir: $(System.DefaultWorkingDirectory)/coverlet/reports
+      reporttypes: HtmlSummary;Cobertura
+      tag: $(Build.BuildNumber)_$(Build.BuildId)
+    enabled: ${{ parameters.testEnable }}
+    condition: and(succeeded(), ${{ parameters.publishTestResults }})
+    continueOnError: true
+
+  #-- Publish code coverage results --#
+  - task: PublishCodeCoverageResults@1
+    displayName: Publish code coverage
+    inputs:
+      pathToSources: $(Build.SourcesDirectory)
+      codeCoverageTool: Cobertura
+      summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml
+    condition: and(succeeded(), ${{ parameters.publishTestResults }})
+    enabled: ${{ parameters.testEnable }}
+    continueOnError: true
+
+  #-- Publish test results --#
+  - task: PublishTestResults@2
+    displayName: Publish tests results
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: junit.xml
+      searchFolder: $(System.DefaultWorkingDirectory)/coverage/
+    condition: and(succeeded(), ${{ parameters.publishTestResults }})
+    enabled: ${{ parameters.testEnable }}
+    continueOnError: true
+
+  #-- Build's quality gate --#
+  - task: mspremier.BuildQualityChecks.QualityChecks-task.BuildQualityChecks@8
+    name: QualityGate
+    displayName: Quality Gate
+    inputs:
+      checkCoverage: true
+      coverageFailOption: fixed
+      coverageType: lines
+      coverageThreshold: ${{ parameters.coverageThreshold }}
+    enabled: ${{ parameters.testEnable }}
+    condition: and(succeeded(), ${{ parameters.publishTestResults }})
+    continueOnError: true
+
+  - task: PowerShell@2
+    name: ContentEmail
+    displayName: Prepare Email Content
+    inputs:
+      targetType: inline
+      script: |
+        $Content = Get-Content -Path "$(Build.ArtifactStagingDirectory)\Common\MailTemplates\CoverageMail.html" -Raw
+
+        $Content = $Content | ForEach-Object {
+          $_ -Replace "{{PIPELINE_BUILD_NAME}}", "$(Build.BuildNumber)" `
+              -Replace "{{PIPELINE_BUILD_NUMBER}}", "$(Build.DefinitionName)" `
+              -Replace "{{COVERED_PORCENTAGE}}", "$(QualityGate.CodeCoveragePolicy.Percentage.Covered)" `
+              -Replace "{{COVERED_VALUE}}", "$(QualityGate.CodeCoveragePolicy.Elements.Covered)" `
+              -Replace "{{COVERED_TYPE}}", "$(QualityGate.CodeCoveragePolicy.Elements.Label)" `
+              -Replace "{{COVERED_MINIMUM}}", "${{ parameters.coverageThreshold }}" `
+              -Replace "{{REQUESTED_FOR}}", "$(Build.RequestedFor)" `
+              -Replace "{{GENERATED_ON}}", "$(Get-Date)" `
+              -Replace "{{UNCOVERED_VALUE}}", "$(QualityGate.CodeCoveragePolicy.Elements.Uncovered)" `
+              -Replace "{{COVERABLE_VALUE}}", "$($(QualityGate.CodeCoveragePolicy.Elements.Covered) + $(QualityGate.CodeCoveragePolicy.Elements.Uncovered))" `
+              -Replace "{{PIPELINE_TAG}}", "$(Build.BuildNumber)_#$(Build.BuildId)" `
+              -Replace "{{PIPELINE_URL}}", "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)&view=codecoverage-tab" `
+              -Replace '\r*\n', ""
+        }
+
+        Write-Host "##vso[Task.SetVariable variable=BodyContent;isSecret=false;isOutput=true;]$Content"
+      errorActionPreference: continue
+    continueOnError: true
+    enabled: ${{ parameters.testEnable }}
+    condition: and(succeeded(), ${{ parameters.publishTestResults }}, eq(variables['QualityGate.CodeCoveragePolicy.Result'], 'failed'))
+
+  - task: rvo.SendEmailTask.send-email-build-task.SendEmail@1
+    displayName: Send Coverage Email
+    inputs:
+      To: $(Build.RequestedForEmail)
+      CC: ${{ parameters.mailListStakeHolders }}
+      From: noreply@yopmail.com
+      Subject: Coverage Report | $(Build.BuildNumber)$(Build.BuildId)
+      Body: $(ContentEmail.BodyContent)
+      BodyAsHtml: true
+      AddAttachment: true
+      Attachment: $(System.DefaultWorkingDirectory)/coverlet/reports/Summary.htm
+      SmtpServer: smtp.yopmail.com
+      SmtpPort: 25
+    continueOnError: true
+    enabled: ${{ parameters.testEnable }}
+    condition: and(succeeded(), ${{ parameters.publishTestResults }}, eq(variables['QualityGate.CodeCoveragePolicy.Result'], 'failed'))

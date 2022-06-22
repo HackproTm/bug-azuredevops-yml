@@ -1,0 +1,63 @@
+parameters:
+  projectType: ""
+
+variables:
+  - ${{ if eq(parameters.projectType, 'API') }}:
+    - name: SolutionName
+      value: Portal.sln
+    - name: ProjectName
+      value: Portal.Api/.Portal.Api.csproj
+    - name: ArtifactName
+      value: ProjectApi
+    - name: RootFolderOrFile
+      value: Portal.Api/bin/Release/net5.0/publish/
+    - name: templateProjectTestName
+      value: Portal.Tests/.Portal.Tests.csproj
+    - name: sonarQubeReportPath
+      value: Portal.Tests/coverage.opencover.xml
+    - name: Project_DatabaseName
+      value: $(Project_MasterDatabaseName)
+    - name: AppVirtualApplication
+      value: ""
+
+  - ${{ if eq(parameters.projectType, 'DB_GEO') }}:
+    - name: SolutionName
+      value: Database.sln
+    - name: ProjectName
+      value: Database
+    - name: ArtifactName
+      value: ProjectGeoDatabase
+    - name: RootFolderOrFile
+      value: Database/bin/Output/
+    - name: Project_DatabaseName
+      value: $(MX_DatabaseName)
+    - name: AppVirtualApplication
+      value: ""
+
+  - ${{ if eq(parameters.projectType, 'DB_MASTER') }}:
+    - name: SolutionName
+      value: Database.sln
+    - name: ProjectName
+      value: Masterdb
+    - name: ArtifactName
+      value: ProjectMasterDatabase
+    - name: RootFolderOrFile
+      value: Masterdb/bin/Output/
+    - name: Project_DatabaseName
+      value: $(Project_MasterDatabaseName)
+    - name: AppVirtualApplication
+      value: ""
+
+  - ${{ if eq(parameters.projectType, 'WEB') }}:
+    - name: SolutionName
+      value: ""
+    - name: ProjectName
+      value: ""
+    - name: ArtifactName
+      value: ProjectWeb
+    - name: RootFolderOrFile
+      value: build/
+    - name: Project_DatabaseName
+      value: $(Project_MasterDatabaseName)
+    - name: AppVirtualApplication
+      value: ""

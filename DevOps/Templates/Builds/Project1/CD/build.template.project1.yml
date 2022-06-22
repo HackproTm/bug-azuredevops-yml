@@ -1,0 +1,14 @@
+parameters:
+  projectsList: []
+
+jobs:
+  - ${{ each job in parameters.projectsList }}:
+    - ${{ each pair in job }}:
+        ${{ if and(ne(pair.key, 'steps'), ne(pair.key, 'parameters')) }}:
+          ${{ pair.key }}: ${{ pair.value }}
+      steps:
+        - template: ${{ job.parameters.templatePath }}
+          parameters:
+            branch: ${{ job.parameters.branch }}
+            repositoryName: ${{ job.parameters.repositoryName }}
+            resourceName: ${{ job.parameters.resourceName }}

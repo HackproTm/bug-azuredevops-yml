@@ -1,0 +1,29 @@
+variables:
+  - name: ComponentName
+    value: WEB
+  - name: AppVNetSubnetId
+    value: $(WebAppSubnetId)
+  - name: AppAspSku
+    value: PremiumV2
+  - name: AppAspSkuCode
+    value: P1v2
+  - name: AppAppCurrentStack
+    value: dotnetcore
+  - name: AppAppNetFrameworkVersion
+    value: v6.0
+  - name: AppAppKind
+    value: app
+  - name: AppASPKind
+    value: app
+
+  - name: AppAppName
+    value: $(App-WebName)
+  - name: AppAspName
+    value: $(App-WebAspName)
+  - name: AppAppUrl
+    value: https://$(App-WebName).$(WebDomain)
+
+  - name: AppConnStringsFilePath
+    value: $(Build.ArtifactStagingDirectory)/Config/ConnStrings.json
+  - name: AppAppSettingsFilePath
+    value: $(Build.ArtifactStagingDirectory)/Config/AppSettings.json

@@ -1,0 +1,28 @@
+parameters:
+  branch: ""
+  repositoryName: ""
+  resourceName: ""
+
+#-- Steps --#
+steps:
+  #-- Build Project Api --#
+  - template: ../../../Common/dotnetcore.template.yml
+    parameters:
+      branch: ${{ parameters.branch }}
+      buildArguments: $(BuildArgumentsCD)
+      pathProjectName: $(ProjectName)
+      netCoreVersion: $(NetCoreVersion)
+      projectName: $(ProjectName)
+      repositoryName: ${{ parameters.repositoryName }}
+      resourceName: ${{ parameters.resourceName }}
+      solutionName: $(SolutionName)
+      runCheckoutCode: true
+      setDotNetCoreVersion: true
+
+  #-- Publish Artifact - Api -#
+  - template: ../../../Common/publishartifact.template.yml
+    parameters:
+      appArtifactName: $(ArtifactName)
+      projectName: $(ProjectName)
+      rootFolderOrFile: $(RootFolderOrFile)
+      pathToPublish: $(Build.ArtifactStagingDirectory)/$(ArtifactName).zip

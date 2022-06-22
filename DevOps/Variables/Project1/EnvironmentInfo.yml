@@ -1,0 +1,53 @@
+parameters:
+  environment: ""
+
+variables:
+  # ██████╗░███████╗██╗░░░██╗███████╗██╗░░░░░░█████╗░██████╗░
+  # ██╔══██╗██╔════╝██║░░░██║██╔════╝██║░░░░░██╔══██╗██╔══██╗
+  # ██║░░██║█████╗░░╚██╗░██╔╝█████╗░░██║░░░░░██║░░██║██████╔╝
+  # ██║░░██║██╔══╝░░░╚████╔╝░██╔══╝░░██║░░░░░██║░░██║██╔═══╝░
+  # ██████╔╝███████╗░░╚██╔╝░░███████╗███████╗╚█████╔╝██║░░░░░
+  # ╚═════╝░╚══════╝░░░╚═╝░░░╚══════╝╚══════╝░╚════╝░╚═╝░░░░░
+  - ${{ if eq(parameters.environment, 'DEV') }}:
+      - name: Environment
+        value: DEV
+      - name: EnvironmentPrefix
+        value: dev
+      - name: LifeCycle
+        value: NPD
+
+      # --------------------------------------------------------------------
+      # Loading Shared variables
+      # --------------------------------------------------------------------
+      - template: ..\Shared\Default.yml
+      - template: .\Main.yml
+      - template: .\Specs.Standard.yml
+
+      # --------------------------------------------------------------------
+      # Loading Application Specific variables
+      # --------------------------------------------------------------------
+      - name: VNetName
+        value: azuse2npdvnt-npd
+      - name: NetSubnetName
+        value: npdnetting_subnet
+      - name: WebSubnetName
+        value: amewebasp_subnet
+      - name: ApiSubnetName
+        value: ameapiasp_subnet
+      - name: SubnetNames
+        value: '@(
+          "$(NetSubnetName)",
+          "$(ApiSubnetName)",
+          "$(WebSubnetName)"
+          )'
+
+      - name: VNetResourceGroup
+        value: "XXXX-XXX-XXX-XXX-XXX"
+
+      # --------------------------------------------------------------------
+      # Pipeline - Provisioning
+      # --------------------------------------------------------------------
+      - name: CreateFailoverGroup
+        value: false
+      - name: ADOAgentPool
+        value: Default

@@ -1,0 +1,117 @@
+variables:
+  - template: ../Variables/variables.template.paths.yml
+    parameters:
+      projectName: PROJECT1
+
+resources:
+  repositories:
+  - repository: ProjectApi
+    type: git
+    name: HackproTeam/ProjectApi
+    ref: main
+    trigger:
+      branches:
+        include:
+        - main
+  - repository: ProjectWeb
+    type: git
+    name: HackproTeam/ProjectWeb
+    ref: main
+    trigger:
+      branches:
+        include:
+        - main
+  - repository: ProjectDatabase
+    type: git
+    name: HackproTeam/ProjectDatabase
+    ref: main
+    trigger:
+      branches:
+        include:
+        - main
+
+stages:
+- stage: Builds
+  jobs:
+    - template: ../Templates/Builds/Project1/CD/build.template.project1.yml
+      parameters:
+        projectsList:
+          - job: ProjectWeb
+            pool:
+              name: Default
+            workspace:
+              clean: all
+            variables:
+              - template: ../Variables/Project1/EnvironmentInfo.yml
+                parameters:
+                  environment: DEV
+              - template: ../Variables/Project1/Specs.WebApp.yml
+              - template: ../Variables/Project1/ProjectInfo.yml
+                parameters:
+                  projectType: WEB
+            parameters:
+              templatePath: build.template.react-CD.yml
+              branch: main
+              repositoryName: ProjectWeb
+              resourceName: ProjectWeb
+          - job: ProjectApi
+            pool: Default
+            workspace:
+              clean: all
+            variables:
+              - template: ../Variables/Project1/EnvironmentInfo.yml
+                parameters:
+                  environment: DEV
+              - template: ../Variables/Project1/Specs.WebApi.yml
+              - template: ../Variables/Project1/ProjectInfo.yml
+                parameters:
+                  projectType: API
+            parameters:
+              templatePath: build.template.api-CD.yml
+              branch: main
+              repositoryName: ProjectApi
+              resourceName: ProjectApi
+          - job: ProjectMasterDatabase
+            pool: Default
+            workspace:
+              clean: all
+            variables:
+              - template: ../Variables/Project1/EnvironmentInfo.yml
+                parameters:
+                  environment: DEV
+              - template: ../Variables/Project1/ProjectInfo.yml
+                parameters:
+                  projectType: DB_MASTER
+            parameters:
+              templatePath: build.template.database-CD.yml
+              branch: main
+              repositoryName: ProjectDatabase
+              resourceName: ProjectDatabase
+          - job: ProjectGeoDatabase
+            pool: Default
+            workspace:
+              clean: all
+            variables:
+              - template: ../Variables/Project1/EnvironmentInfo.yml
+                parameters:
+                  environment: DEV
+              - template: ../Variables/Project1/ProjectInfo.yml
+                parameters:
+                  ProjectType: DB_GEO
+            parameters:
+              templatePath: build.template.database-CD.yml
+              branch: main
+              repositoryName: ProjectDatabase
+              resourceName: ProjectDatabase
+
+- stage: DEV
+  displayName: DEV
+  dependsOn: [Builds]
+  jobs:
+  - template: ../Templates/Releases/Code/Project1/release.stage.template.code.project1.deploy.yml
+    parameters:
+      environment: DEV
+      poolName: Default
+      runAPI: true
+      runReact: true
+      runDataBase: true
